@@ -1,0 +1,71 @@
+<?php
+
+/**
+ * Alter the list of menu item attributes.
+ *
+ * @param $attributes
+ *   An array of attributes to be controlled by Menu Attributes, keyed by
+ *   attribute name. Each attribute record should be an array with the following
+ *   key/value pairs:
+ *   - label: The human-readable name of the attribute.
+ *   - description: The attribute description.
+ *   - form: A Form API array. Some default values for this array are provided
+ *     in menu_attributes_get_menu_attribute_info().
+ *
+ * @see menu_attributes_menu_attribute_info()
+ * @see menu_attributes_get_menu_attribute_info()
+ */
+function menu_attr_color_menu_attribute_info() {
+  // Add a Tabindex attribute.
+  $attributes['color'] = array(
+    'label' => t('Color'),
+    'description' => t('Specifies a RGB color code.'),
+    'form' => array(
+      '#maxlength' => 7,
+      '#size' => 7,
+    ),
+  );
+
+  return $attributes;
+}
+
+function menu_attr_color_set($mlid, $color) {
+  $menu_link = menu_link_load($mlid);
+  $menu_link['options']['attributes']['color'] = $color;
+  return menu_link_save($menu_link);
+}
+
+function menu_attr_color_get($mlid) {
+  $menu_link = menu_link_load($mlid);
+  return menu_attr_color_get_from_obj($menu_link);
+}
+
+function menu_attr_color_get_from_obj($menu_link) {
+  if (!empty($menu_link['options']) && !empty($menu_link['options']['attributes']) && isset($menu_link['options']['attributes']['color'])) {
+    return $menu_link['options']['attributes']['color'];
+  }
+  return FALSE;
+}
+
+function menu_attr_color_block_view_alter(&$data, $block) {
+  if ($block->module == 'system' && $block->delta == 'main-menu') {
+    foreach ($data['content'] as $mlid => $menu) {
+      if (is_numeric($mlid) && $color = menu_attr_color_get_from_obj($menu['#original_link'])) {
+        $data['content'][$mlid]['#localized_options']['attributes']['style'] = 'color: '. $color .';';
+        unset($data['content'][$mlid]['#localized_options']['attributes']['color']);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_menu_breadcrumb_alter().
+ */
+/*function menu_attr_color_menu_breadcrumb_alter(&$active_trail, $item) {
+  $color = FALSE;
+  foreach ($active_trail as $delta => $trail) {
+    if ($color || $color = menu_attr_color_get_from_obj($trail)) {
+      $active_trail[$delta]['localized_options']['attributes']['style'] = 'color: '. $color .';';
+    }
+  }
+}*/

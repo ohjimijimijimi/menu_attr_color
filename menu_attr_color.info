@@ -1,0 +1,4 @@
+name = Menu Attribute Color
+description = Attach a color attribute to menu_links
+core = 7.x
+package = AA
